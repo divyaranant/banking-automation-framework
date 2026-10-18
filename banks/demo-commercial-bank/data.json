@@ -1,0 +1,26 @@
+{
+  "registration": {
+    "firstName": "Demo",
+    "lastName": "Commercial",
+    "street": "500 Business Park",
+    "city": "Dallas",
+    "state": "TX",
+    "zipCode": "75201",
+    "phone": "2145550100",
+    "ssn": "987-65-4321"
+  },
+  "openAccount": { "type": "CHECKING" },
+  "transfer": { "amount": "0.02" },
+  "billPay": {
+    "amount": "0.02",
+    "payee": {
+      "name": "Office Supplies Inc",
+      "street": "9 Commerce Blvd",
+      "city": "Dallas",
+      "state": "TX",
+      "zipCode": "75201",
+      "phone": "2145550122",
+      "account": "54321"
+    }
+  }
+}

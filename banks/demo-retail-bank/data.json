@@ -1,0 +1,27 @@
+{
+  "registration": {
+    "firstName": "Demo",
+    "lastName": "Retail",
+    "street": "1 Main Street",
+    "city": "Austin",
+    "state": "TX",
+    "zipCode": "73301",
+    "phone": "5125550100",
+    "ssn": "123-45-6789"
+  },
+  "openAccount": { "type": "SAVINGS" },
+  "transfer": { "amount": "0.01" },
+  "billPay": {
+    "amount": "0.01",
+    "payee": {
+      "name": "City Power & Light",
+      "street": "200 Utility Way",
+      "city": "Austin",
+      "state": "TX",
+      "zipCode": "73301",
+      "phone": "5125550111",
+      "account": "98765"
+    }
+  },
+  "loan": { "amount": "100", "downPayment": "10" }
+}

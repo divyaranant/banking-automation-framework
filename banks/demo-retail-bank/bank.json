@@ -1,0 +1,5 @@
+{
+  "displayName": "Demo Retail Bank",
+  "segment": "retail",
+  "features": ["auth", "accounts", "transfers", "billpay", "loans"]
+}

@@ -1,0 +1,111 @@
+name: Banking automation
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      bank:
+        description: Bank folder under banks/
+        required: true
+        default: demo-retail-bank
+        type: string
+      suite:
+        description: Test suite to run
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - build
+          - sit
+          - all
+      approved_by:
+        description: Bank and PM approver (required for production banks)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate-config:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - name: Validate bank configuration
+        run: node -e "const {listBanks,loadBank}=require('./lib/bank-context'); listBanks().forEach(b=>{loadBank(b);console.log('ok',b)})"
+
+  demo-smoke:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        bank:
+          - demo-retail-bank
+          - demo-commercial-bank
+    env:
+      CI: 'true'
+      BANK: ${{ matrix.bank }}
+      SUITE: smoke
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - name: Run demo smoke tests
+        run: npx playwright test
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ matrix.bank }}
+          path: reports/${{ matrix.bank }}/
+          if-no-files-found: warn
+          retention-days: 14
+
+  bank-run:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+    env:
+      CI: 'true'
+      BANK: ${{ inputs.bank }}
+      APPROVED_BY: ${{ inputs.approved_by }}
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      VAULT_MOUNT: ${{ secrets.VAULT_MOUNT }}
+      VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+      BANK_USERNAME: ${{ secrets.BANK_USERNAME }}
+      BANK_PASSWORD: ${{ secrets.BANK_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - name: Validate selected bank
+        run: node -e "require('./lib/bank-context').loadBank()"
+      - name: Set suite
+        env:
+          SUITE_INPUT: ${{ inputs.suite }}
+        run: |
+          if [ "$SUITE_INPUT" != "all" ]; then
+            echo "SUITE=$SUITE_INPUT" >> "$GITHUB_ENV"
+          fi
+      - name: Run selected bank tests
+        run: npx playwright test
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ inputs.bank }}
+          path: reports/${{ inputs.bank }}/
+          if-no-files-found: warn
+          retention-days: 30

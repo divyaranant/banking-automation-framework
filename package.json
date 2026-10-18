@@ -1,0 +1,26 @@
+{
+  "name": "banking-automation-framework",
+  "version": "1.0.0",
+  "description": "Multi-bank Playwright automation framework (POM, per-bank config, Vault, Jenkins/GitHub Actions)",
+  "main": "playwright.config.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "cross-env SUITE=smoke playwright test",
+    "test:build": "cross-env SUITE=build playwright test",
+    "test:sit": "cross-env SUITE=sit playwright test",
+    "test:browserstack": "browserstack-node-sdk playwright test",
+    "new-bank": "node scripts/new-bank.js",
+    "report": "playwright show-report",
+    "list-banks": "node -e \"console.log(require('./lib/bank-context').listBanks().join('\\n'))\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "browserstack-node-sdk": "^1.73.3",
+    "cross-env": "^10.1.0",
+    "dotenv": "^18.0.8"
+  }
+}

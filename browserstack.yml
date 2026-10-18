@@ -1,0 +1,23 @@
+# Used only by `npm run test:browserstack` (browserstack-node-sdk). Credentials come from env.
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+projectName: Banking Automation Framework
+buildName: ${BANK} - ${SUITE} - build
+buildIdentifier: '#${BUILD_NUMBER}'
+
+platforms:
+  - os: Windows
+    osVersion: 11
+    browserName: chrome
+    browserVersion: latest
+  - os: OS X
+    osVersion: Sonoma
+    browserName: playwright-webkit
+    browserVersion: latest
+
+parallelsPerPlatform: 2
+browserstackAutomation: true
+debug: true
+networkLogs: true
+consoleLogs: errors

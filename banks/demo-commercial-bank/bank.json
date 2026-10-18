@@ -1,0 +1,5 @@
+{
+  "displayName": "Demo Commercial Bank",
+  "segment": "commercial",
+  "features": ["auth", "accounts", "transfers", "billpay"]
+}
