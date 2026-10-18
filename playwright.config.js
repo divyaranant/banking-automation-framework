@@ -4,7 +4,8 @@ const { loadBank, statePaths } = require('./lib/bank-context');
 
 // One run == one bank. BANK picks the folder; SUITE (build | sit | smoke) picks the tag.
 const bank = loadBank();
-const suite = process.env.SUITE;
+// "all" (used by the Jenkins SUITE choice parameter) means no tag filter, same as unset.
+const suite = process.env.SUITE && process.env.SUITE !== 'all' ? process.env.SUITE : undefined;
 
 // FEATURES narrows the run to a comma-separated subset of the bank's enabled features
 // (e.g. FEATURES=accounts,transfers). Unset/empty runs everything the bank supports.

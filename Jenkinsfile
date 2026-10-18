@@ -23,7 +23,6 @@ pipeline {
   environment {
     CI = 'true'
     VAULT_ADDR = credentials('vault-addr')   // Jenkins "secret text"; leave unset to use demo provisioning
-    SUITE_ARG = "${params.SUITE == 'all' ? '' : params.SUITE}"
   }
 
   stages {
@@ -60,7 +59,7 @@ pipeline {
         withCredentials([string(credentialsId: "vault-token", variable: 'VAULT_TOKEN')]) {
           script {
             def runner = params.BROWSERSTACK ? 'npx browserstack-node-sdk playwright test' : 'npx playwright test'
-            withEnv(["BANK=${params.BANK}", "SUITE=${env.SUITE_ARG}", "FEATURES=${params.FEATURES}"]) {
+            withEnv(["BANK=${params.BANK}", "SUITE=${params.SUITE}", "FEATURES=${params.FEATURES}"]) {
               if (params.BROWSERSTACK) {
                 withCredentials([usernamePassword(credentialsId: 'browserstack', usernameVariable: 'BROWSERSTACK_USERNAME', passwordVariable: 'BROWSERSTACK_ACCESS_KEY')]) {
                   bat runner
