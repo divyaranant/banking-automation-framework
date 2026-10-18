@@ -44,14 +44,14 @@ pipeline {
 
     stage('Install') {
       steps {
-        sh 'npm ci'
-        sh 'npx playwright install chromium'
+        bat 'npm ci'
+        bat 'npx playwright install chromium'
       }
     }
 
     stage('Validate bank config') {
       steps {
-        sh 'node -e "require(\'./lib/bank-context\').loadBank(process.env.BANK)"'
+        bat "node -e \"require('./lib/bank-context').loadBank(process.env.BANK)\""
       }
     }
 
@@ -63,10 +63,10 @@ pipeline {
             withEnv(["BANK=${params.BANK}", "SUITE=${env.SUITE_ARG}", "FEATURES=${params.FEATURES}"]) {
               if (params.BROWSERSTACK) {
                 withCredentials([usernamePassword(credentialsId: 'browserstack', usernameVariable: 'BROWSERSTACK_USERNAME', passwordVariable: 'BROWSERSTACK_ACCESS_KEY')]) {
-                  sh runner
+                  bat runner
                 }
               } else {
-                sh runner
+                bat runner
               }
             }
           }
@@ -78,14 +78,8 @@ pipeline {
   post {
     always {
       junit allowEmptyResults: true, testResults: "reports/${params.BANK}/junit.xml"
-      publishHTML(target: [
-        reportDir: "reports/${params.BANK}/html",
-        reportFiles: 'index.html',
-        reportName: "Playwright - ${params.BANK}",
-        keepAll: true,
-        allowMissing: true,
-        alwaysLinkToLastBuild: true
-      ])
+      // HTML Publisher plugin isn't installed; the report is still browsable from the
+      // archived artifacts below (reports/<bank>/html/index.html).
       archiveArtifacts artifacts: "reports/${params.BANK}/**", allowEmptyArchive: true
 
       script {
@@ -95,14 +89,7 @@ pipeline {
         def junitPath = "reports/${params.BANK}/junit.xml"
         if (params.SYNC_TEST_MANAGEMENT && fileExists(junitPath)) {
           withCredentials([string(credentialsId: 'test-management-api-token', variable: 'TEST_MANAGEMENT_API_TOKEN')]) {
-            sh """
-              curl -sS -k -X POST https://test-management.browserstack.com/api/v1/import/results/xml/junit \\
-                -u "\$TEST_MANAGEMENT_API_TOKEN" \\
-                -F project_name="Banking Automation Framework" \\
-                -F file_path=@${junitPath} \\
-                -F test_run_name="${params.BANK} - ${params.SUITE} - build #${env.BUILD_NUMBER}" \\
-                || echo "BrowserStack Test Management upload failed (non-fatal)"
-            """
+            bat "curl -sS -k -X POST https://test-management.browserstack.com/api/v1/import/results/xml/junit -u \"%TEST_MANAGEMENT_API_TOKEN%\" -F project_name=\"Banking Automation Framework\" -F file_path=@${junitPath} -F test_run_name=\"${params.BANK} - ${params.SUITE} - build #${env.BUILD_NUMBER}\" || exit /b 0"
           }
         }
       }
