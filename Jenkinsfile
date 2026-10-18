@@ -12,6 +12,7 @@ pipeline {
   parameters {
     string(name: 'BANK', defaultValue: 'demo-retail-bank', description: 'Folder name under banks/')
     choice(name: 'SUITE', choices: ['smoke', 'build', 'sit', 'all'], description: 'smoke=upgrade check, build=new env, sit=pre go-live')
+    string(name: 'FEATURES', defaultValue: '', description: 'Comma-separated subset of the bank\'s features to run, e.g. "accounts,transfers". Leave blank to run every feature the bank supports.')
     booleanParam(name: 'BROWSERSTACK', defaultValue: false, description: 'Execute on BrowserStack instead of the local container browser')
     booleanParam(name: 'PRODUCTION', defaultValue: false, description: 'Target bank env is production -> requires approval')
   }
@@ -61,7 +62,7 @@ pipeline {
         withCredentials([string(credentialsId: "vault-token", variable: 'VAULT_TOKEN')]) {
           script {
             def runner = params.BROWSERSTACK ? 'npx browserstack-node-sdk playwright test' : 'npx playwright test'
-            withEnv(["BANK=${params.BANK}", "SUITE=${env.SUITE_ARG}"]) {
+            withEnv(["BANK=${params.BANK}", "SUITE=${env.SUITE_ARG}", "FEATURES=${params.FEATURES}"]) {
               if (params.BROWSERSTACK) {
                 withCredentials([usernamePassword(credentialsId: 'browserstack', usernameVariable: 'BROWSERSTACK_USERNAME', passwordVariable: 'BROWSERSTACK_ACCESS_KEY')]) {
                   sh runner
