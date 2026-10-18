@@ -69,8 +69,16 @@ BANK=acme-cu SUITE=build npx playwright test
 ```
 
 ## CI/CD
-- **Jenkinsfile**: parameters `BANK`, `SUITE`, `BROWSERSTACK`, `PRODUCTION`; approval gate, Playwright
-  Docker agent, Vault token via Jenkins credentials, JUnit + HTML report publishing.
+- **Jenkinsfile**: parameters `BANK`, `SUITE`, `FEATURES`, `BROWSERSTACK`, `PRODUCTION`,
+  `SYNC_TEST_MANAGEMENT`; approval gate, Playwright Docker agent, Vault token via Jenkins
+  credentials, JUnit + HTML report publishing.
+- **BrowserStack Test Management**: when `SYNC_TEST_MANAGEMENT` is on (default), the pipeline
+  uploads the JUnit report to BrowserStack Test Management after every run, creating/updating a
+  Test Run named `<BANK> - <SUITE> - build #<N>` with each test case's pass/fail/untested status
+  and failure stack trace. Requires a Jenkins secret-text credential `test-management-api-token`
+  (your Test Management **Active API Key**, from Settings). Screenshots/video/trace stay in the
+  Playwright HTML report published above — Test Management's JUnit importer doesn't accept
+  attachments per test case.
 - **GitHub Actions** (`.github/workflows/ci.yml`): config validation and automatic smoke matrix for demo banks on pushes, pull requests, and a weekly schedule. Use **Actions → Banking automation → Run workflow** for a manual bank/suite run; provide `approved_by` for production banks. Configure repository secrets `VAULT_ADDR` and `VAULT_TOKEN` (plus optional `VAULT_MOUNT` / `VAULT_NAMESPACE`) or `BANK_USERNAME` / `BANK_PASSWORD` for real-bank credentials. Reports are uploaded as workflow artifacts.
 - **BrowserStack**: `BROWSERSTACK=true` in Jenkins runs `browserstack-node-sdk playwright test`
   with `browserstack.yml`.
