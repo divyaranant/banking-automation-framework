@@ -1,13 +1,9 @@
 // Parameterised pipeline: one job serves every bank. Runs are manual and gated, because
 // real FI runs hit production with real accounts (penny transactions only).
 pipeline {
-  agent {
-    docker {
-      // keep the tag in sync with @playwright/test in package.json
-      image 'mcr.microsoft.com/playwright:v1.64.1-noble'
-      args '--ipc=host'
-    }
-  }
+  // Runs on the Jenkins agent directly (no Docker Pipeline plugin required).
+  // Requires Node.js on the agent; `playwright install` below provisions the browser.
+  agent any
 
   parameters {
     string(name: 'BANK', defaultValue: 'demo-retail-bank', description: 'Folder name under banks/')
@@ -49,6 +45,7 @@ pipeline {
     stage('Install') {
       steps {
         sh 'npm ci'
+        sh 'npx playwright install chromium'
       }
     }
 
